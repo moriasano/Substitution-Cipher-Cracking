@@ -9,7 +9,7 @@ def preprocess(text):
     :return: The properly formatted cipher-text.
     """
     # Remove all whitespace
-    text = text.replace(' ', '').replace('\n', '').replace('\t', '')
+    text = "".join(text.split())
 
     # Check that text is only alphabet characters
     if not text.isalpha():
@@ -31,6 +31,17 @@ def decrypt(cipher_text, freq):
 
     print(cipher_text)
     print(freq)
+
+    # TODO: you are here!!
+    # Find the occurrence for each letter
+    ct_freq = {}
+    for letter in cipher_text:
+        if not ct_freq[letter]:
+            ct_freq[letter] = 1
+        else:
+            ct_freq[letter] = ct_freq[letter] + 1
+
+    print ct_freq
 
 
 if __name__ == "__main__":
