@@ -1,6 +1,13 @@
 import argparse
 import json
 
+# Used whenever we need to map anything across the entire alphabet
+LETTERS = {
+    "a": None, "b": None, "c": None, "d": None, "e": None, "f": None, "g": None, "h": None, "i": None,
+    "j": None, "k": None, "l": None, "m": None, "n": None, "o": None, "p": None, "q": None, "r": None,
+    "s": None, "t": None, "u": None, "v": None, "w": None, "x": None, "y": None, "z": None
+}
+
 
 def preprocess(text):
     """
@@ -21,6 +28,27 @@ def preprocess(text):
     return text
 
 
+def substitute(ct, subs):
+    """
+    Perform substitutions on the cipher-text.
+    :param ct: The cipher-text string.
+    :param subs: Dict with mappings from cipher-text to plain-text letters.
+    :return: The text with all the substitutions performed.
+    """
+    # Create a list of letters from string; for indexing
+    pt = [letter for letter in ct]
+
+    for orig, sub in subs.iteritems():
+        i = 0
+        for letter in ct:
+            if letter == orig:
+                pt[i] = sub
+            i += 1
+
+    pt = "".join(pt)
+    return pt
+
+
 def decrypt(cipher_text, freq):
     """
     Main algorithm flow for decryption.
@@ -29,19 +57,21 @@ def decrypt(cipher_text, freq):
     :return: TODO!
     """
 
-    print(cipher_text)
-    print(freq)
-
-    # TODO: you are here!!
     # Find the occurrence for each letter
-    ct_freq = {}
+    letter_occurrence = LETTERS
     for letter in cipher_text:
-        if not ct_freq[letter]:
-            ct_freq[letter] = 1
+        if letter_occurrence[letter] is None:
+            letter_occurrence[letter] = 1
         else:
-            ct_freq[letter] = ct_freq[letter] + 1
+            letter_occurrence[letter] = letter_occurrence[letter] + 1
 
-    print ct_freq
+
+    subs = {"e": "9", "a": "1"}
+    print("1: " + cipher_text)
+    print("2: " + substitute(cipher_text, subs))
+
+    # print freq
+    # print letter_occurrence
 
 
 if __name__ == "__main__":
