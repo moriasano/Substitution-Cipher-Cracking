@@ -16,11 +16,15 @@ class Solution:
     """
     cipher_text = ""     # Stores the original cipher-text
     substitutions = []   # The list of substitutions, in the order that we add them
-    orig_freq = LETTERS  # Contains the occurrence of each letter from the original cipher-text
+    orig_mono_freq = []  # Contains the occurrence of each letter from the original cipher-text
+    orig_di_freq = []    # Contains the occurrence of each digraph from the original cipher-text
+    orig_tri_freq = []   # Contains the occurrence of each trigraph from the original cipher-text
 
     def __init__(self, cipher_text):
         self.cipher_text = self.__preprocess(cipher_text)  # Prepare input text for decryption
-        self.orig_freq = self.get_occurrences()  # Keep track of the original letter occurrence count
+        self.orig_mono_freq = self.get_mono_freq()  # Keep track of the original letter count
+        self.orig_di_freq = self.get_di_freq()      # Keep track of the original digraph count
+        self.orig_tri_freq = self.get_tri_freq()    # Keep track of the original digraph count
 
     def push_sub(self, old, new):
         """
@@ -52,11 +56,11 @@ class Solution:
         pt = "".join(pt)
         return pt
 
-    def get_occurrences(self):
+    def get_mono_freq(self):
         """
         Count the occurrence of each letter of the current solution, which it the cipher-text after all substitutions
         have been performed.
-        :return: Dict. {Letter: Occurrence}
+        :return: List of (Letter:, Occurrence)
         """
         occurrences = LETTERS
         for letter in self.substitute():
@@ -64,6 +68,48 @@ class Solution:
                 occurrences[letter] = 1
             else:
                 occurrences[letter] = occurrences[letter] + 1
+
+        # Put in descending order
+        occurrences = sorted(occurrences.iteritems(), key=lambda x: x[1], reverse=True)
+
+        return occurrences
+
+    def get_di_freq(self):
+        """
+        Count the occurrence of each digraph of the current solution, which it the cipher-text after all substitutions
+        have been performed.
+        :return: List of (Digraph:, Occurrence)
+        """
+        occurrences = {}
+        text = self.substitute()
+        for i in range(len(text) - 1):
+            di = text[i] + text[i + 1]
+
+            if di in occurrences:
+                occurrences[di] = occurrences[di] + 1
+            else:
+                occurrences[di] = 1
+
+        # Put in descending order
+        occurrences = sorted(occurrences.iteritems(), key=lambda x: x[1], reverse=True)
+
+        return occurrences
+
+    def get_tri_freq(self):
+        """
+        Count the occurrence of each trigraph of the current solution, which it the cipher-text after all substitutions
+        have been performed.
+        :return: List of (Trigraph:, Occurrence)
+        """
+        occurrences = {}
+        text = self.substitute()
+        for i in range(len(text) - 2):
+            tri = text[i] + text[i + 1] + text[i + 2]
+
+            if tri in occurrences:
+                occurrences[tri] = occurrences[tri] + 1
+            else:
+                occurrences[tri] = 1
 
         # Put in descending order
         occurrences = sorted(occurrences.iteritems(), key=lambda x: x[1], reverse=True)
@@ -91,27 +137,34 @@ class Solution:
         return text
 
 
-def crack(cipher_text, mono, di):
+def crack(cipher_text, mono, di, tri):
     """
     Main algorithm flow for cracking.
     :param cipher_text: The cipher-text as a string. Assumes cipher-text has went through preprocess.
     :param mono: list of sorted monograms.
     :param di: list of sorted digraphs.
+    :param tri: list of sorted trigraphs.
     """
     solution = Solution(cipher_text)
 
-    # Just try substituting in order of frequency json
-    for i in range(len(mono)):
-        old = solution.orig_freq[i][0]
-        new = str(mono[i][0])
-        print(old + " is probably '" + new + "'.")
-        solution.push_sub(old=old, new=new)
+    print("mono: " + str(solution.orig_mono_freq))
+    print("di:   " + str(solution.orig_di_freq))
+    print("tri:  " + str(solution.orig_tri_freq))
 
-    plain_text = solution.substitute()
-    print("orig: " + solution.cipher_text)
-    print("new:  " + plain_text)
+    # Start with the word "THE"
+    
 
-    # First, try substituting in the most common letter
+    # # Just try substituting in order of frequency json
+    # for i in range(len(mono)):
+    #     old = solution.orig_mono_freq[i][0]
+    #     new = str(mono[i][0])
+    #     print(old + " is probably '" + new + "'.")
+    #     solution.push_sub(old=old, new=new)
+
+    # plain_text = solution.substitute()
+    # print("orig: " + solution.cipher_text)
+    # print("new:  " + plain_text)
+
 
 
 if __name__ == "__main__":
@@ -131,5 +184,6 @@ if __name__ == "__main__":
         # Read in frequencies from file
         m = sorted(f["monograms"].iteritems(), key=lambda x: x[1], reverse=True)
         d = sorted(f["digraphs"].iteritems(), key=lambda x: x[1], reverse=True)
+        t = sorted(f["trigraph"].iteritems(), key=lambda x: x[1], reverse=True)
 
-    crack(cipher_text=ct, mono=m, di=d)
+    crack(cipher_text=ct, mono=m, di=d, tri=t)
