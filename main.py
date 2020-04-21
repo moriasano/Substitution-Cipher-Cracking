@@ -58,16 +58,17 @@ class Solution:
         have been performed.
         :return: Dict. {Letter: Occurrence}
         """
-
-        # TODO: order this by the occurrence count
-
-        occurrence = LETTERS
+        occurrences = LETTERS
         for letter in self.substitute():
-            if occurrence[letter] is None:
-                occurrence[letter] = 1
+            if occurrences[letter] is None:
+                occurrences[letter] = 1
             else:
-                occurrence[letter] = occurrence[letter] + 1
-        return occurrence
+                occurrences[letter] = occurrences[letter] + 1
+
+        # Put in descending order
+        occurrences = sorted(occurrences.iteritems(), key=lambda x: x[1], reverse=True)
+
+        return occurrences
 
     @staticmethod
     def __preprocess(ct):
@@ -90,34 +91,45 @@ class Solution:
         return text
 
 
-def decrypt(cipher_text, freq):
+def crack(cipher_text, mono, di):
     """
-    Main algorithm flow for decryption.
+    Main algorithm flow for cracking.
     :param cipher_text: The cipher-text as a string. Assumes cipher-text has went through preprocess.
-    :param freq: Dict containing the letter frequency distribution.
+    :param mono: list of sorted monograms.
+    :param di: list of sorted digraphs.
     """
     solution = Solution(cipher_text)
-    solution.push_sub(old="i", new="1")
-    solution.push_sub(old="e", new="2")
-    plain_text = solution.substitute()
 
+    # Just try substituting in order of frequency json
+    for i in range(len(mono)):
+        old = solution.orig_freq[i][0]
+        new = str(mono[i][0])
+        print(old + " is probably '" + new + "'.")
+        solution.push_sub(old=old, new=new)
+
+    plain_text = solution.substitute()
     print("orig: " + solution.cipher_text)
     print("new:  " + plain_text)
-    print("freq: " + str(solution.orig_freq))
+
+    # First, try substituting in the most common letter
 
 
 if __name__ == "__main__":
     # Parse Args
     parser = argparse.ArgumentParser()
     parser.add_argument('cipher_file', metavar='C', type=str, help="Text file containing the cipher-text.")
-    parser.add_argument('--freq', dest='freq_json', type=str, default="frequencies/us_english.json",
-                        help="Optional: json file containing a letter frequency distribution.")
+    parser.add_argument('--lang', dest='lang', type=str, default="frequencies/us_english.json",
+                        help="Optional: possible support for other languages in the future.")
     args = parser.parse_args()
 
     # Prepare user inputs for decryption
     with open(args.cipher_file, 'r') as c_handle:
-        with open(args.freq_json, 'r') as f_handle:
-            ct = c_handle.read()
-            f = json.loads(f_handle.read())
+        ct = c_handle.read()
+    with open(args.lang, 'r') as f_handle:
+        f = json.loads(f_handle.read())
 
-    decrypt(cipher_text=ct, freq=f)
+        # Read in frequencies from file
+        m = sorted(f["monograms"].iteritems(), key=lambda x: x[1], reverse=True)
+        d = sorted(f["digraphs"].iteritems(), key=lambda x: x[1], reverse=True)
+
+    crack(cipher_text=ct, mono=m, di=d)
