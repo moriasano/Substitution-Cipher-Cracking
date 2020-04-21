@@ -147,24 +147,32 @@ def crack(cipher_text, mono, di, tri):
     """
     solution = Solution(cipher_text)
 
-    print("mono: " + str(solution.orig_mono_freq))
-    print("di:   " + str(solution.orig_di_freq))
-    print("tri:  " + str(solution.orig_tri_freq))
+    # print("mono: " + str(solution.orig_mono_freq))
+    # print("di:   " + str(solution.orig_di_freq))
+    # print("tri:  " + str(solution.orig_tri_freq))
 
     # Start with the word "THE"
-    
+    mono = solution.orig_mono_freq[0][0]  # This should be 'e'
+    di = solution.orig_di_freq[0][0]      # This should be 'th'
+    tri = solution.orig_tri_freq[0][0]    # This should be 'the'
+    top_5 = [letter for letter, freq in solution.orig_mono_freq][0:5]  # Top 5 most frequent cipher-text letters
+    if mono in tri and di in tri:
+        if di + mono == tri:
+            # Best case scenario which matches frequencies perfectly; di = th, mono = e
+            print("Found 'THE' - Best Case")
+        elif di in tri and tri[0] in top_5:
+            # Okay scenario which matches frequencies closely; di = he, mono = e
+            print("Fount 'THE' - Good Case")
 
-    # # Just try substituting in order of frequency json
-    # for i in range(len(mono)):
-    #     old = solution.orig_mono_freq[i][0]
-    #     new = str(mono[i][0])
-    #     print(old + " is probably '" + new + "'.")
-    #     solution.push_sub(old=old, new=new)
+        solution.push_sub(tri[0], "T")
+        solution.push_sub(tri[1], "H")
+        solution.push_sub(tri[2], "E")
+    else:
+        print("Did not find 'THE'")
 
-    # plain_text = solution.substitute()
-    # print("orig: " + solution.cipher_text)
-    # print("new:  " + plain_text)
-
+    plain_text = solution.substitute()
+    print("orig: " + solution.cipher_text)
+    print("new:  " + plain_text)
 
 
 if __name__ == "__main__":
