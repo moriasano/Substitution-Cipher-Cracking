@@ -108,7 +108,7 @@ def get_di_freq(string):
     have been performed.
     :return: List of (Digraph:, Occurrence)
     """
-    occurrences = {letter: 0 for letter in alphabet}
+    occurrences = {}
 
     for i in range(len(string) - 1):
         di = string[i] + string[i + 1]
@@ -130,7 +130,7 @@ def get_tri_freq(string):
     have been performed.
     :return: List of (Trigraph:, Occurrence)
     """
-    occurrences = {letter: 0 for letter in alphabet}
+    occurrences = {}
 
     for i in range(len(string) - 2):
         tri = string[i] + string[i + 1] + string[i + 2]
