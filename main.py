@@ -15,10 +15,6 @@ class Solution:
         self.cipher_text = self.__preprocess(cipher_text)  # Prepare input text for decryption
         self.substitutions = {letter: [] for letter in alphabet}
 
-        # self.orig_mono_freq = self.get_mono_freq()  # Keep track of the original letter count
-        # self.orig_di_freq = self.get_di_freq()      # Keep track of the original digraph count
-        # self.orig_tri_freq = self.get_tri_freq()    # Keep track of the original digraph count
-
     def add_sub(self, c_letter, p_letter):
         """
         Add a substitution to the in-progress solution.
@@ -158,35 +154,36 @@ def crack(cipher_text, mono, di, tri):
     # This is where we will store the solution
     solution = Solution(cipher_text)
 
+    # Count the mono, di, and trigraphs
+    mono = get_mono_freq(solution.cipher_text)
+    di = get_di_freq(solution.cipher_text)
+    tri = get_tri_freq(solution.cipher_text)
+
+    print("mono: " + str(mono))
+    print("di:   " + str(di))
+    print("tri:  " + str(tri))
+
+    # Start with the word "THE"
+    mono_1 = mono[0][0]  # This should be 'e'
+    di_1 = di[0][0]      # This should be 'th'
+    tri_1 = tri[0][0]    # This should be 'the'
+    top_5 = [letter for letter, freq in mono][0:5]  # Top 5 most frequent cipher-text letters
+    if mono_1 in tri_1 and di_1 in tri_1:
+        if di_1 + mono_1 == tri_1:
+            # Best case scenario which matches frequencies perfectly; di = th, mono = e
+            print("Found 'THE' - Best Case")
+        elif di_1 in tri_1 and tri_1[0] in top_5:
+            # Okay scenario which matches frequencies closely; di = he, mono = e
+            print("Fount 'THE' - Good Case")
+
+        solution.add_sub(tri_1[0], "T")
+        solution.add_sub(tri_1[1], "H")
+        solution.add_sub(tri_1[2], "E")
+    else:
+        print("Did not find 'THE'")
+
     for sol in solution.substitute():
         print(sol)
-
-    print("mono: " + str(get_mono_freq(solution.cipher_text)))
-    print("di:   " + str(get_di_freq(solution.cipher_text)))
-    print("tri:  " + str(get_tri_freq(solution.cipher_text)))
-
-    # # Start with the word "THE"
-    # mono = solution.orig_mono_freq[0][0]  # This should be 'e'
-    # di = solution.orig_di_freq[0][0]      # This should be 'th'
-    # tri = solution.orig_tri_freq[0][0]    # This should be 'the'
-    # top_5 = [letter for letter, freq in solution.orig_mono_freq][0:5]  # Top 5 most frequent cipher-text letters
-    # if mono in tri and di in tri:
-    #     if di + mono == tri:
-    #         # Best case scenario which matches frequencies perfectly; di = th, mono = e
-    #         print("Found 'THE' - Best Case")
-    #     elif di in tri and tri[0] in top_5:
-    #         # Okay scenario which matches frequencies closely; di = he, mono = e
-    #         print("Fount 'THE' - Good Case")
-    #
-    #     solution.push_sub(tri[0], "T")
-    #     solution.push_sub(tri[1], "H")
-    #     solution.push_sub(tri[2], "E")
-    # else:
-    #     print("Did not find 'THE'")
-    #
-    # plain_text = solution.substitute()
-    # print("orig: " + solution.cipher_text)
-    # print("new:  " + plain_text)
 
 
 if __name__ == "__main__":
