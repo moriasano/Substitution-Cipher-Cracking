@@ -2,13 +2,6 @@ import argparse
 import itertools
 import json
 
-# Used whenever we need to map anything across the entire alphabet
-LETTERS = {
-    "a": None, "b": None, "c": None, "d": None, "e": None, "f": None, "g": None, "h": None, "i": None,
-    "j": None, "k": None, "l": None, "m": None, "n": None, "o": None, "p": None, "q": None, "r": None,
-    "s": None, "t": None, "u": None, "v": None, "w": None, "x": None, "y": None, "z": None
-}
-
 
 class Solution:
     """
@@ -16,17 +9,11 @@ class Solution:
     the substitution (or mappings) for each letter from the cipher-text to the plain-text.
     """
     cipher_text = ""        # Stores the original cipher-text
-    alphabet = None         # Alphabet for the text
     substitutions = {}      # The list of substitutions, in the order that we add them
-    # orig_mono_freq = []       # Contains the occurrence of each letter from the original cipher-text
-    # orig_di_freq = []         # Contains the occurrence of each digraph from the original cipher-text
-    # orig_tri_freq = []        # Contains the occurrence of each trigraph from the original cipher-text
 
-    def __init__(self, cipher_text, alphabet):
+    def __init__(self, cipher_text):
         self.cipher_text = self.__preprocess(cipher_text)  # Prepare input text for decryption
-        alphabet.sort()
-        self.alphabet = alphabet
-        self.substitutions = {letter: [] for letter in self.alphabet}
+        self.substitutions = {letter: [] for letter in alphabet}
 
         # self.orig_mono_freq = self.get_mono_freq()  # Keep track of the original letter count
         # self.orig_di_freq = self.get_di_freq()      # Keep track of the original digraph count
@@ -77,84 +64,6 @@ class Solution:
 
         return possible_plaintexts
 
-    # def substitute(self):
-    #     """
-    #     Perform all of the substitution onto the cipher-text.
-    #     :return: The cipher-text after the substitutions have been performed. With a complete and accurate list of
-    #     substitutions, this should be the complete plain-text.
-    #     """
-    #     pt = [letter for letter in self.cipher_text]
-    #
-    #     for orig, sub in self.substitutions:
-    #         i = 0
-    #         for letter in self.cipher_text:
-    #             if letter == orig:
-    #                 pt[i] = sub
-    #             i += 1
-    #
-    #     pt = "".join(pt)
-    #     return pt
-    #
-    # def get_mono_freq(self):
-    #     """
-    #     Count the occurrence of each letter of the current solution, which it the cipher-text after all substitutions
-    #     have been performed.
-    #     :return: List of (Letter:, Occurrence)
-    #     """
-    #     occurrences = LETTERS
-    #     for letter in self.substitute():
-    #         if occurrences[letter] is None:
-    #             occurrences[letter] = 1
-    #         else:
-    #             occurrences[letter] = occurrences[letter] + 1
-    #
-    #     # Put in descending order
-    #     occurrences = sorted(occurrences.iteritems(), key=lambda x: x[1], reverse=True)
-    #
-    #     return occurrences
-    #
-    # def get_di_freq(self):
-    #     """
-    #     Count the occurrence of each digraph of the current solution, which it the cipher-text after all substitutions
-    #     have been performed.
-    #     :return: List of (Digraph:, Occurrence)
-    #     """
-    #     occurrences = {}
-    #     text = self.substitute()
-    #     for i in range(len(text) - 1):
-    #         di = text[i] + text[i + 1]
-    #
-    #         if di in occurrences:
-    #             occurrences[di] = occurrences[di] + 1
-    #         else:
-    #             occurrences[di] = 1
-    #
-    #     # Put in descending order
-    #     occurrences = sorted(occurrences.iteritems(), key=lambda x: x[1], reverse=True)
-    #
-    #     return occurrences
-    #
-    # def get_tri_freq(self):
-    #     """
-    #     Count the occurrence of each trigraph of the current solution, which it the cipher-text after all substitutions
-    #     have been performed.
-    #     :return: List of (Trigraph:, Occurrence)
-    #     """
-    #     occurrences = {}
-    #     text = self.substitute()
-    #     for i in range(len(text) - 2):
-    #         tri = text[i] + text[i + 1] + text[i + 2]
-    #
-    #         if tri in occurrences:
-    #             occurrences[tri] = occurrences[tri] + 1
-    #         else:
-    #             occurrences[tri] = 1
-    #
-    #     # Put in descending order
-    #     occurrences = sorted(occurrences.iteritems(), key=lambda x: x[1], reverse=True)
-    #
-    #     return occurrences
-
     @staticmethod
     def __preprocess(ct):
         """
@@ -176,6 +85,67 @@ class Solution:
         return text
 
 
+def get_mono_freq(string):
+    """
+    Count the occurrence of each letter of the current solution, which it the cipher-text after all substitutions
+    have been performed.
+    :return: List of (Letter:, Occurrence)
+    """
+    occurrences = {letter: 0 for letter in alphabet}
+
+    for letter in string:
+        occurrences[letter] = occurrences[letter] + 1
+
+    # Put in descending order
+    occurrences = sorted(occurrences.iteritems(), key=lambda x: x[1], reverse=True)
+
+    return occurrences
+
+
+def get_di_freq(string):
+    """
+    Count the occurrence of each digraph of the current solution, which it the cipher-text after all substitutions
+    have been performed.
+    :return: List of (Digraph:, Occurrence)
+    """
+    occurrences = {letter: 0 for letter in alphabet}
+
+    for i in range(len(string) - 1):
+        di = string[i] + string[i + 1]
+
+        if di in occurrences:
+            occurrences[di] = occurrences[di] + 1
+        else:
+            occurrences[di] = 1
+
+    # Put in descending order
+    occurrences = sorted(occurrences.iteritems(), key=lambda x: x[1], reverse=True)
+
+    return occurrences
+
+
+def get_tri_freq(string):
+    """
+    Count the occurrence of each trigraph of the current solution, which it the cipher-text after all substitutions
+    have been performed.
+    :return: List of (Trigraph:, Occurrence)
+    """
+    occurrences = {letter: 0 for letter in alphabet}
+
+    for i in range(len(string) - 2):
+        tri = string[i] + string[i + 1] + string[i + 2]
+
+        if tri in occurrences:
+            occurrences[tri] = occurrences[tri] + 1
+        else:
+            occurrences[tri] = 1
+
+    # Put in descending order
+    occurrences = sorted(occurrences.iteritems(), key=lambda x: x[1], reverse=True)
+
+    return occurrences
+
+
 def crack(cipher_text, mono, di, tri):
     """
     Main algorithm flow for cracking.
@@ -185,19 +155,16 @@ def crack(cipher_text, mono, di, tri):
     :param tri: list of sorted trigraphs.
     """
 
-    # Define the alphabet from the list of monograms
-    alphabet = [letter for letter, _ in mono]
-
     # This is where we will store the solution
-    solution = Solution(cipher_text, alphabet)
+    solution = Solution(cipher_text)
 
-    for solution in solution.substitute():
-        print(solution)
+    for sol in solution.substitute():
+        print(sol)
 
-    # # print("mono: " + str(solution.orig_mono_freq))
-    # # print("di:   " + str(solution.orig_di_freq))
-    # # print("tri:  " + str(solution.orig_tri_freq))
-    #
+    print("mono: " + str(get_mono_freq(solution.cipher_text)))
+    print("di:   " + str(get_di_freq(solution.cipher_text)))
+    print("tri:  " + str(get_tri_freq(solution.cipher_text)))
+
     # # Start with the word "THE"
     # mono = solution.orig_mono_freq[0][0]  # This should be 'e'
     # di = solution.orig_di_freq[0][0]      # This should be 'th'
@@ -240,5 +207,10 @@ if __name__ == "__main__":
         m = sorted(f["monograms"].iteritems(), key=lambda x: x[1], reverse=True)
         d = sorted(f["digraphs"].iteritems(), key=lambda x: x[1], reverse=True)
         t = sorted(f["trigraph"].iteritems(), key=lambda x: x[1], reverse=True)
+
+    # Define the alphabet from the list of monograms
+    global alphabet
+    alphabet = [letter for letter, _ in m]
+    alphabet.sort()
 
     crack(cipher_text=ct, mono=m, di=d, tri=t)
