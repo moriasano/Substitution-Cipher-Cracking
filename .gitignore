@@ -1,3 +1,7 @@
 .idea
 
 test/.DS_Store
+
+languages/custom/*
+
+utils/__pycache__/*

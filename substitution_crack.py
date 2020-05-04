@@ -2,7 +2,7 @@ import argparse
 import itertools
 import json
 
-from utils.text_processing import text_preprocessing, count_custom_fitness_data
+from utils.text_processing import text_preprocessing, count_custom_fitness_data, CUSTOM_FITNESS
 
 class Solution:
     """
@@ -197,11 +197,11 @@ if __name__ == "__main__":
     fitness_path = "languages/en_us/"  # Use English letter frequencies by default
     # Calculate letter frequencies if they provide training text
     if not args.training is None:
-        fitness_path = "languages/custom/"  # point to custom letter frequencies
+        fitness_path = CUSTOM_FITNESS  # point to custom letter frequencies
 
         # Read training data
-        with open(args.lang, 'r') as t_handle:
-            training_text = t_handle.read()
+        with open(args.training, 'r') as t_handle:
+            training_text = text_preprocessing(t_handle.read())
 
             # Count frequencies and write to file
             count_custom_fitness_data(training_text)
@@ -210,5 +210,5 @@ if __name__ == "__main__":
     with open(args.cipher_file, 'r') as c_handle:
         ct = text_preprocessing(c_handle.read())
 
-    crack(cipher_text=ct, fitness=fitness_path)
+    # crack(cipher_text=ct, fitness=fitness_path)
 
