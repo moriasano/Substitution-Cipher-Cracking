@@ -1,15 +1,18 @@
 # Substitution Cipher Cracking
+## Overview:
+Final project for JHU Cryptography. This code cracks substitution ciphers using a hill-climbing approach. A random key
+is generated. On each round on letter of the key is modified and a language "fitness" test is performed to determine if
+the new key is more or less fit. This continues until the fitness score cannot be improved.
 ## Prerequisites:  
-* Python 2.7+ (has not been tested with 3.x)  
+* Python 3+
 * Cipher-text as a text file
 ## Usage  
-From command line:
-> python main.py cipher_text.txt
+Simple Usage for English language plain-texts
+> python substitution_crack.py /path/to/cipher_text.txt
 
-You can decrypt using a different letter frequency distribution; given as a json file:
-> --freq /path/to/frequency.json
+You can also provide (large) sample text for custom language fitness
+> python substitution_crack.py /path/to/cipher_text.txt --training /path/to/training.txt
 
 ## Citations
-Monograms - https://gist.github.com/evilpacket/5973230
-Digraphs - http://pi.math.cornell.edu/~mec/2003-2004/cryptography/subs/digraphs.html
-Trigraphs - http://practicalcryptography.com/cryptanalysis/letter-frequencies-various-languages/english-letter-frequencies/
+Language Fitness - http://practicalcryptography.com/cryptanalysis/text-characterisation/quadgrams/
+Training Text - https://www.gutenberg.org/files/11/11.txt
