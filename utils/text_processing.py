@@ -22,8 +22,6 @@ def count_custom_fitness_data(training_text):
         tri = training_text[i:i + 3]
         quad = training_text[i:i + 4]
 
-        print(mono + " " + di + " " + tri + " " + quad)
-
         # Increment Mono, Di, Tri, Quadgraphs
         if mono in mono_count:
             mono_count[mono] += 1
@@ -31,23 +29,21 @@ def count_custom_fitness_data(training_text):
             mono_count[mono] = 1
 
         if di in di_count:
-            di_count[mono] += 1
+            di_count[di] += 1
         else:
-            di_count[mono] = 1
+            di_count[di] = 1
 
         if tri in tri_count:
-            tri_count[mono] += 1
+            tri_count[tri] += 1
         else:
-            tri_count[mono] = 1
+            tri_count[tri] = 1
 
         if quad in quad_count:
-            quad_count[mono] += 1
+            quad_count[quad] += 1
         else:
-            quad_count[mono] = 1
+            quad_count[quad] = 1
 
         # TODO: The above does not count the last 3 characters, add this later if time permits
-
-    # TODO: you are here!!! The writting is broken
 
     # Write counts to file
     with open(CUSTOM_FITNESS + "monographs.txt", 'w') as fh:
