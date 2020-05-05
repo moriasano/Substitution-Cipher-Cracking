@@ -1,8 +1,8 @@
 # Substitution Cipher Cracking
 ## Overview:
 Final project for JHU Cryptography. This code cracks substitution ciphers using a hill-climbing approach. A random key
-is generated. On each round on letter of the key is modified and a language "fitness" test is performed to determine if
-the new key is more or less fit. This continues until the fitness score cannot be improved.
+is generated. On each round, two key values are swapped and a language "fitness" score is determined. 
+
 ## Prerequisites:  
 * Python 3+
 * Cipher-text as a text file

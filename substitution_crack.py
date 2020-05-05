@@ -1,189 +1,38 @@
 import argparse
-import itertools
-import json
+import random
+import utils
 
-from utils.text_processing import text_preprocessing, count_custom_fitness_data, CUSTOM_FITNESS
+ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-class Solution:
+class SubstitutionCipher:
     """
     Class to represents the in-progress solution as we try to crack the cipher. The solution itself is the list of all
     the substitution (or mappings) for each letter from the cipher-text to the plain-text.
     """
-    cipher_text = ""        # Stores the original cipher-text
-    substitutions = {}      # The list of substitutions, in the order that we add them
+    cipher_text = ""  # Stores the original cipher-text
+    key = ""          # Represents the mapping between cipher-text and plain-text letters
 
-    def __init__(self, cipher_text):
+    def __init__(self, cipher_text, fitness):
         self.cipher_text = cipher_text  # Prepare input text for decryption
-        self.substitutions = {letter: [] for letter in alphabet}
 
-    def add_sub(self, c_letter, p_letter):
-        """
-        Add a substitution to the in-progress solution.
-        :param c_letter: letter from the cipher-text.
-        :param p_letter: the letter which the old letter maps to.
-        """
-        self.substitutions[c_letter].append(p_letter)
+        # Start with a random key
+        key = [letter for letter in ALPHABET]
+        random.shuffle(key)
+        self.key = "".join(key)
 
-    def del_sub(self, c_letter, p_letter):
-        """
-        Remove a possible substitution from the in-progress solution.
-        :param c_letter: letter from the cipher-text.
-        :param p_letter: the letter which the old letter maps to.
-        """
-        try:
-            self.substitutions[c_letter].remove(p_letter)
-        except ValueError:
-            print("{} is not in the substitution list for {}".format(p_letter, c_letter))
+        # Calculate log probabilities for mono, di, tri, quadgraphs
+        self.mono_prob = utils.get_log_probability(fitness + "monographs.txt")
+        self.di_prob = utils.get_log_probability(fitness + "digraphs.txt")
+        self.tri_prob = utils.get_log_probability(fitness + "trigraphs.txt")
+        self.quad_prob = utils.get_log_probability(fitness + "quadgraphs.txt")
 
-    def substitute(self):
-        """ Get all possible plain-texts, given the substitutions added to the solution so far """
-        possible_plaintexts = []
+    def apply_key(self):
+        plaintext = self.cipher_text
 
-        # TODO: remove permutations with repeated letters
+        for i in range(len(self.key)):
+            plaintext = plaintext.replace(self.key[i], ALPHABET[i].lower())
 
-        # Get list of all possible permutations of substitutions
-        letters_with_subs = [letter for letter in self.substitutions if len(self.substitutions[letter]) > 0]
-        list_of_subs = [self.substitutions[letter] for letter in letters_with_subs]
-        for l in list(itertools.product(*list_of_subs)):
-            substitutions = {letters_with_subs[i]: l[i] for i in range(len(letters_with_subs))}
-
-            # Perform the substitutions
-            plaintext = list(self.cipher_text)
-            for key in substitutions:
-                i = 0
-                for letter in self.cipher_text:
-                    if letter == key:
-                        plaintext[i] = substitutions[key]
-                    i += 1
-            plaintext = "".join(plaintext)
-
-            possible_plaintexts.append(plaintext)
-
-        return possible_plaintexts
-
-    @staticmethod
-    def __preprocess(ct):
-        """
-        Prepare the cipher-text for decryption.
-        :param ct: Raw cipher-text
-        :return: String ready for decryption.
-        """
-
-        # Remove all whitespace
-        text = "".join(ct.split())
-
-        # Check that text is only alphabet characters
-        if not text.isalpha():
-            raise ValueError("Cipher-text must only contain English alphabet characters.")
-
-        # Make everything lower-case for consistency
-        text = text.lower()
-
-        return text
-
-
-# def get_mono_freq(string):
-#     """
-#     Count the occurrence of each letter of the current solution, which it the cipher-text after all substitutions
-#     have been performed.
-#     :return: List of (Letter:, Occurrence)
-#     """
-#     occurrences = {letter: 0 for letter in alphabet}
-#
-#     for letter in string:
-#         occurrences[letter] = occurrences[letter] + 1
-#
-#     # Put in descending order
-#     occurrences = sorted(occurrences.iteritems(), key=lambda x: x[1], reverse=True)
-#
-#     return occurrences
-#
-#
-# def get_di_freq(string):
-#     """
-#     Count the occurrence of each digraph of the current solution, which it the cipher-text after all substitutions
-#     have been performed.
-#     :return: List of (Digraph:, Occurrence)
-#     """
-#     occurrences = {}
-#
-#     for i in range(len(string) - 1):
-#         di = string[i] + string[i + 1]
-#
-#         if di in occurrences:
-#             occurrences[di] = occurrences[di] + 1
-#         else:
-#             occurrences[di] = 1
-#
-#     # Put in descending order
-#     occurrences = sorted(occurrences.iteritems(), key=lambda x: x[1], reverse=True)
-#
-#     return occurrences
-#
-#
-# def get_tri_freq(string):
-#     """
-#     Count the occurrence of each trigraph of the current solution, which it the cipher-text after all substitutions
-#     have been performed.
-#     :return: List of (Trigraph:, Occurrence)
-#     """
-#     occurrences = {}
-#
-#     for i in range(len(string) - 2):
-#         tri = string[i] + string[i + 1] + string[i + 2]
-#
-#         if tri in occurrences:
-#             occurrences[tri] = occurrences[tri] + 1
-#         else:
-#             occurrences[tri] = 1
-#
-#     # Put in descending order
-#     occurrences = sorted(occurrences.iteritems(), key=lambda x: x[1], reverse=True)
-#
-#     return occurrences
-
-
-def crack(cipher_text, fitness):
-    """
-    Main algorithm flow for cracking.
-    :param cipher_text: The cipher-text as a string. Assumes cipher-text has went through preprocess.
-    :param fitness: Path to directory containing letter counts. See "languages/en_us"
-    """
-
-    # # This is where we will store the solution
-    # solution = Solution(cipher_text)
-    #
-    # # Count the mono, di, and trigraphs
-    # mono = get_mono_freq(solution.cipher_text)
-    # di = get_di_freq(solution.cipher_text)
-    # tri = get_tri_freq(solution.cipher_text)
-    #
-    # print("mono: " + str(mono))
-    # print("di:   " + str(di))
-    # print("tri:  " + str(tri))
-    #
-    # # Start with the word "THE"
-    # mono_1 = mono[0][0]  # This should be 'e'
-    # di_1 = di[0][0]      # This should be 'th'
-    # tri_1 = tri[0][0]    # This should be 'the'
-    # top_5 = [letter for letter, freq in mono][0:5]  # Top 5 most frequent cipher-text letters
-    # if mono_1 in tri_1 and di_1 in tri_1:
-    #     if di_1 + mono_1 == tri_1:
-    #         # Best case scenario which matches frequencies perfectly; di = th, mono = e
-    #         print("Found 'THE' - Best Case")
-    #     elif di_1 in tri_1 and tri_1[0] in top_5:
-    #         # Okay scenario which matches frequencies closely; di = he, mono = e
-    #         print("Fount 'THE' - Good Case")
-    #
-    #     solution.add_sub(tri_1[0], "T")
-    #     solution.add_sub(tri_1[1], "H")
-    #     solution.add_sub(tri_1[2], "E")
-    # else:
-    #     print("Did not find 'THE'")
-    #
-    # for sol in solution.substitute():
-    #     print(sol)
-
+        return plaintext.upper()
 
 if __name__ == "__main__":
     # Parse Args
@@ -197,18 +46,17 @@ if __name__ == "__main__":
     fitness_path = "languages/en_us/"  # Use English letter frequencies by default
     # Calculate letter frequencies if they provide training text
     if not args.training is None:
-        fitness_path = CUSTOM_FITNESS  # point to custom letter frequencies
+        fitness_path = utils.CUSTOM_FITNESS  # point to custom letter frequencies
 
         # Read training data
         with open(args.training, 'r') as t_handle:
-            training_text = text_preprocessing(t_handle.read())
+            training_text = utils.text_preprocessing(t_handle.read())
 
             # Count frequencies and write to file
-            count_custom_fitness_data(training_text)
+            utils.write_custom_fitness_data(training_text)
 
     # Prepare user inputs for decryption
     with open(args.cipher_file, 'r') as c_handle:
-        ct = text_preprocessing(c_handle.read())
+        ct = utils.text_preprocessing(c_handle.read())
 
-    # crack(cipher_text=ct, fitness=fitness_path)
-
+    SubstitutionCipher(cipher_text=ct, fitness=fitness_path)
