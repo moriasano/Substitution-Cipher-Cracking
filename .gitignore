@@ -4,4 +4,6 @@ test/.DS_Store
 
 languages/custom/*
 
-utils/__pycache__/*
+__pycache__/
+*.py[cod]
+*$py.class

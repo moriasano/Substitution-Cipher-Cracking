@@ -5,10 +5,7 @@ import utils
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 class SubstitutionCipher:
-    """
-    Class to represents the in-progress solution as we try to crack the cipher. The solution itself is the list of all
-    the substitution (or mappings) for each letter from the cipher-text to the plain-text.
-    """
+    """ Solve substitution cipher using hill climbing approach """
     cipher_text = ""  # Stores the original cipher-text
     key = ""          # Represents the mapping between cipher-text and plain-text letters
 
@@ -27,12 +24,43 @@ class SubstitutionCipher:
         self.quad_prob = utils.get_log_probability(fitness + "quadgraphs.txt")
 
     def apply_key(self):
-        plaintext = self.cipher_text
+        """Decrypt the cipher-text using the current key"""
+        text = self.cipher_text
 
         for i in range(len(self.key)):
-            plaintext = plaintext.replace(self.key[i], ALPHABET[i].lower())
+            text = text.replace(self.key[i], ALPHABET[i].lower())  # We write lowercase so we dont swap characters twice
 
-        return plaintext.upper()
+        return text.upper()  # Return everything to uppercase
+
+    def calculate_fitness(self):
+        """
+        Calculate the language 'fitness' of the current key(ciphertext)
+
+        Each score is calculated by adding the log probabilities. Ex:
+        log(prob(CRYPTO)) = log(prob(CRY)) + log(prob(RYP)) + log(prob(YPT)) + log(prob(PTO))
+        """
+        text = self.apply_key()
+
+        mono_score = 0
+        monographs = utils.get_monographs(text)
+        for mono in monographs:
+            mono_score += self.mono_prob[mono]
+
+        di_score = 0
+        digraphs = utils.get_digraphs(text)
+        for di in digraphs:
+            di_score += self.di_prob[di]
+
+        tri_score = 0
+        trigraphs = utils.get_trigraphs(text)
+        for tri in trigraphs:
+            tri_score += self.tri_prob[tri]
+
+        quad_score = 0
+        quadgraphs = utils.get_quadgraphs(text)
+        for quad in quadgraphs:
+            quad_score += self.quad_prob[quad]
+
 
 if __name__ == "__main__":
     # Parse Args
@@ -59,4 +87,5 @@ if __name__ == "__main__":
     with open(args.cipher_file, 'r') as c_handle:
         ct = utils.text_preprocessing(c_handle.read())
 
-    SubstitutionCipher(cipher_text=ct, fitness=fitness_path)
+    cipher = SubstitutionCipher(cipher_text=ct, fitness=fitness_path)
+    cipher.calculate_fitness()

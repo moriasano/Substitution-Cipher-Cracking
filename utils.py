@@ -10,6 +10,7 @@ def text_preprocessing(text):
     return text
 
 def get_monographs(text):
+    """ Get list of monographs """
     monographs = []
 
     for letter in text:
@@ -18,6 +19,7 @@ def get_monographs(text):
     return monographs
 
 def get_digraphs(text):
+    """ Get list of digraphs """
     digraphs = []
 
     for i in range(len(text) - 1):
@@ -26,6 +28,7 @@ def get_digraphs(text):
     return digraphs
 
 def get_trigraphs(text):
+    """ Get list of trigraphs """
     trigraphs = []
 
     for i in range(len(text) - 2):
@@ -34,6 +37,7 @@ def get_trigraphs(text):
     return trigraphs
 
 def get_quadgraphs(text):
+    """ Get list of quadgraphs """
     quadgraphs = []
 
     for i in range(len(text) - 3):
@@ -42,6 +46,7 @@ def get_quadgraphs(text):
     return quadgraphs
 
 def write_custom_fitness_data(training_text):
+    """ Allow for custom probabilities by counting occurrences in user provided text. """
 
     # Monographs
     mono_count = {}
@@ -95,6 +100,7 @@ def write_custom_fitness_data(training_text):
             fh.write("{} {}\n".format(str(key), str(sorted_count[key])))
 
 def get_log_probability(file):
+    """ File contains substring and counts. Convert that into log probabilities. """
     total_count = 0
     log_probability = {}
 
