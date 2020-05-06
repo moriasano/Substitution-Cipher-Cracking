@@ -4,6 +4,7 @@ import utils
 
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
+
 class SubstitutionCipher:
     """ Solve substitution cipher using hill climbing approach """
     cipher_text = ""  # Stores the original cipher-text
@@ -23,6 +24,14 @@ class SubstitutionCipher:
         self.tri_prob = utils.get_log_probability(fitness + "trigraphs.txt")
         self.quad_prob = utils.get_log_probability(fitness + "quadgraphs.txt")
 
+    def solve(self):
+        ROUNDS = 5000
+
+        for _ in range(ROUNDS):
+            self.key_swap()
+
+        return self.apply_key()
+
     def apply_key(self):
         """Decrypt the cipher-text using the current key"""
         text = self.cipher_text
@@ -38,28 +47,60 @@ class SubstitutionCipher:
 
         Each score is calculated by adding the log probabilities. Ex:
         log(prob(CRYPTO)) = log(prob(CRY)) + log(prob(RYP)) + log(prob(YPT)) + log(prob(PTO))
+
+        Probabilities are negative. Closer to 0 is more likely.
         """
         text = self.apply_key()
 
         mono_score = 0
         monographs = utils.get_monographs(text)
         for mono in monographs:
-            mono_score += self.mono_prob[mono]
+            # If the substring is not present, the probability is ~0
+            if mono in self.mono_prob:
+                mono_score += self.mono_prob[mono]
 
         di_score = 0
         digraphs = utils.get_digraphs(text)
         for di in digraphs:
-            di_score += self.di_prob[di]
+            # If the substring is not present, the probability is ~0
+            if di in self.di_prob:
+                di_score += self.di_prob[di]
 
         tri_score = 0
         trigraphs = utils.get_trigraphs(text)
         for tri in trigraphs:
-            tri_score += self.tri_prob[tri]
+            # If the substring is not present, the probability is ~0
+            if tri in self.tri_prob:
+                tri_score += self.tri_prob[tri]
 
         quad_score = 0
         quadgraphs = utils.get_quadgraphs(text)
         for quad in quadgraphs:
-            quad_score += self.quad_prob[quad]
+            # If the substring is not present, the probability is ~0
+            if quad in self.quad_prob:
+                quad_score += self.quad_prob[quad]
+
+        # TODO: What is the best way to calculate a total score
+
+        return mono_score + di_score + tri_score + quad_score
+
+    def key_swap(self):
+        """ Randomly swap key values anc check if that improved the score. """
+        old_key = self.key  # In case we need to revert
+        old_score = self.calculate_fitness()
+
+        index_1 = random.randint(0, 25)
+        index_2 = random.randint(0, 25)
+        # Do not allow the same index
+        while index_1 == index_2:
+            index_2 = random.randint(0, 25)
+        list_key = list(self.key)  # Convert to list for swapping
+        list_key[index_1], list_key[index_2] = list_key[index_2], list_key[index_1]
+        self.key = "".join(list_key)  # Convert back to string
+
+        # Revert if old key had better score (closer to 0, scores are negative)
+        if old_score > self.calculate_fitness():
+            self.key = old_key
 
 
 if __name__ == "__main__":
@@ -88,4 +129,4 @@ if __name__ == "__main__":
         ct = utils.text_preprocessing(c_handle.read())
 
     cipher = SubstitutionCipher(cipher_text=ct, fitness=fitness_path)
-    cipher.calculate_fitness()
+    print(cipher.solve())
