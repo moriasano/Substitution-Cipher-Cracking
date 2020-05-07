@@ -172,9 +172,5 @@ if __name__ == "__main__":
         ct = utils.text_preprocessing(c_handle.read())
 
     # Solve
-    poop = 0
-    for i in range(50):
-        cipher = SubstitutionCipher(cipher_text=ct, fitness=fitness_path)
-        poop += cipher.solve()
-
-    print("average: " + str(poop / 50))
+    cipher = SubstitutionCipher(cipher_text=ct, fitness=fitness_path)
+    cipher.solve()
