@@ -45,59 +45,45 @@ def get_quadgraphs(text):
 
     return quadgraphs
 
+def get_occurence_dict(list):
+    """ Convert a list of substring into a dictionary of substring and there counts"""
+    count = {}
+
+    for substring in list:
+        if substring in count:
+            count[substring] += 1
+        else:
+            count[substring] = 1
+
+    # Return the dictionary in descending order
+    return {k: v for k, v in sorted(count.items(), key=lambda item: item[1], reverse=True)}
+
 def write_custom_fitness_data(training_text):
     """ Allow for custom probabilities by counting occurrences in user provided text. """
 
     # Monographs
-    mono_count = {}
-    monographs = get_monographs(training_text)
-    for mono in monographs:
-        if mono in mono_count:
-            mono_count[mono] += 1
-        else:
-            mono_count[mono] = 1
+    monograph_dict = get_occurence_dict(get_monographs(training_text))
     with open(CUSTOM_FITNESS + "monographs.txt", 'w') as fh:
-        sorted_count = {k: v for k, v in sorted(mono_count.items(), key=lambda item: item[1], reverse=True)}
-        for key in sorted_count:
-            fh.write("{} {}\n".format(str(key), str(sorted_count[key])))
+        for key in monograph_dict:
+            fh.write("{} {}\n".format(str(key), str(monograph_dict[key])))
 
     # Digraphs
-    di_count = {}
-    digraphs = get_digraphs(training_text)
-    for di in digraphs:
-        if di in di_count:
-            di_count[di] += 1
-        else:
-            di_count[di] = 1
+    digraph_dict = get_occurence_dict(get_digraphs(training_text))
     with open(CUSTOM_FITNESS + "digraphs.txt", 'w') as fh:
-        sorted_count = {k: v for k, v in sorted(di_count.items(), key=lambda item: item[1], reverse=True)}
-        for key in sorted_count:
-            fh.write("{} {}\n".format(str(key), str(sorted_count[key])))
+        for key in digraph_dict:
+            fh.write("{} {}\n".format(str(key), str(digraph_dict[key])))
 
     # Trigraphs
-    tri_count = {}
-    trigraphs = get_trigraphs(training_text)
-    for tri in trigraphs:
-        if tri in tri_count:
-            tri_count[tri] += 1
-        else:
-            tri_count[tri] = 1
+    trigraph_dict = get_occurence_dict(get_trigraphs(training_text))
     with open(CUSTOM_FITNESS + "trigraphs.txt", 'w') as fh:
-        sorted_count = {k: v for k, v in sorted(tri_count.items(), key=lambda item: item[1], reverse=True)}
-        for key in sorted_count:
-            fh.write("{} {}\n".format(str(key), str(sorted_count[key])))
+        for key in trigraph_dict:
+            fh.write("{} {}\n".format(str(key), str(trigraph_dict[key])))
 
-    quad_count = {}
-    quadgraphs = get_quadgraphs(training_text)
-    for quad in quadgraphs:
-        if quad in quad_count:
-            quad_count[quad] += 1
-        else:
-            quad_count[quad] = 1
+    # Quadgraph
+    quadgraph_dict = get_occurence_dict(get_quadgraphs(training_text))
     with open(CUSTOM_FITNESS + "quadgraphs.txt", 'w') as fh:
-        sorted_count = {k: v for k, v in sorted(quad_count.items(), key=lambda item: item[1], reverse=True)}
-        for key in sorted_count:
-            fh.write("{} {}\n".format(str(key), str(sorted_count[key])))
+        for key in quadgraph_dict:
+            fh.write("{} {}\n".format(str(key), str(quadgraph_dict[key])))
 
 def get_log_probability(file):
     """ File contains substring and counts. Convert that into log probabilities. """

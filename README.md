@@ -8,10 +8,10 @@ is generated. On each round, two key values are swapped and a language "fitness"
 * Cipher-text as a text file
 ## Usage  
 Simple Usage for English language plain-texts
-> python substitution_crack.py /path/to/cipher_text.txt
+> python3 substitution_crack.py /path/to/cipher_text.txt
 
 You can also provide (large) sample text for custom language fitness
-> python substitution_crack.py /path/to/cipher_text.txt --training /path/to/training.txt
+> python3 substitution_crack.py /path/to/cipher_text.txt --training /path/to/training.txt
 
 ## Citations
 Language Fitness - http://practicalcryptography.com/cryptanalysis/text-characterisation/quadgrams/
