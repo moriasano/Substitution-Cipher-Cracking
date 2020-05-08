@@ -140,10 +140,11 @@ class SubstitutionCipher:
         self.key = "".join(list_key)  # Convert back to string
 
         # Revert if old key had better score (closer to 0, scores are negative)
-        if old_score > self.calculate_fitness():
-            self.key = old_key
-            return 0  # Swap was unsuccessful
-        return 1  # Swap was successful
+        if not float(old_score) >= float(self.calculate_fitness()):
+            return 1  # Swap was successful
+
+        self.key = old_key
+        return 0  # Swap was unsuccessful
 
 
 if __name__ == "__main__":
